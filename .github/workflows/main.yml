@@ -1,0 +1,30 @@
+name: Build and Publish NuGet Package
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0'
+
+    - name: Restore dependencies
+      run: dotnet restore Dtwo.Plugins.WorldPathfinding.csproj
+
+    - name: Build project
+      run: dotnet build Dtwo.Plugins.WorldPathfinding.csproj --configuration Release /p:Version="0.0.1-alpha"
+
+    - name: Pack NuGet package
+      run: dotnet pack Dtwo.Plugins.WorldPathfinding.csproj --configuration Release /p:Version="0.0.1-alpha" --no-build --output .
+
+    - name: Publish to GitHub Packages
+      run: dotnet nuget push Dtwo.Plugins.WorldPathfinding.0.0.1-alpha.nupkg --source "https://nuget.pkg.github.com/DtwoTool/index.json" --api-key ${{ secrets.NUGET_API_KEY }}
